@@ -31,13 +31,13 @@ app.post('/teams', (req, res) => {
     teams.push(team);
     nextId += 1;
     return res.status(201).json(team);
-  } 
-    res.sendStatus(400);
-  
-    const newTeam = { ...req.body };
-    teams.push(newTeam);
+  }
+  res.sendStatus(400);
 
- return res.status(201).json({ team: newTeam });
+  const newTeam = { ...req.body };
+  teams.push(newTeam);
+
+  return res.status(201).json({ team: newTeam });
 });
 
 // Edit
@@ -49,14 +49,17 @@ app.put('/teams/:id', (req, res) => {
   for (let i = 0; i < teams.length; i += 1) {
     const team = teams[i];
 
+    if (team.id !== Number(id)) {
+      return res.status(404).json({ message: 'Time não encontrado!' });
+    }
+
     if (team.id === Number(id)) {
       team.name = name;
       team.initials = initials;
       updatedTeam = team;
     }
   }
-
-  res.status(200).json({ updatedTeam });
+  return res.status(200).json(updatedTeam);
 });
 
 // Delete
