@@ -1,5 +1,8 @@
+/* eslint-disable max-lines-per-function */
 // src/app.js
 const express = require('express');
+const validateInitials = require('./middlewares/validateInitials');
+const validateProp = require('./middlewares/validateProperty');
 
 const app = express();
 app.use(express.json());
@@ -24,42 +27,30 @@ app.get('/', (req, res) => res.status(200).json({ message: 'olha ele ae ó' }));
 app.get('/teams', (req, res) => res.status(200).json(teams));
 
 // Create
-app.post('/teams', (req, res) => {
-  const requiredProperties = ['name', 'initials'];
-  if (requiredProperties.every((property) => property in req.body)) {
-    const team = { id: nextId, ...req.body };
-    teams.push(team);
-    nextId += 1;
-    return res.status(201).json(team);
-  }
-  res.sendStatus(400);
-
-  const newTeam = { ...req.body };
-  teams.push(newTeam);
-
-  return res.status(201).json({ team: newTeam });
+app.post('/teams', validateProp, (req, res) => {
+  const team = { id: nextId, ...req.body };
+  teams.push(team);
+  nextId += 1;
+  return res.status(201).json(team);
 });
 
 // Edit
-app.put('/teams/:id', (req, res) => {
+app.put('/teams/:id', validateProp, validateInitials, (req, res) => {
   const { id } = req.params;
   const { name, initials } = req.body;
   let updatedTeam;
 
   for (let i = 0; i < teams.length; i += 1) {
     const team = teams[i];
-
-    if (team.id !== Number(id)) {
-      return res.status(404).json({ message: 'Time não encontrado!' });
-    }
-
+  
     if (team.id === Number(id)) {
       team.name = name;
       team.initials = initials;
       updatedTeam = team;
+
+      return res.status(200).json(updatedTeam);
     }
   }
-  return res.status(200).json(updatedTeam);
 });
 
 // Delete
