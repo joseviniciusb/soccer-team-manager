@@ -1,6 +1,6 @@
 const TokenGenerator = require('uuid-token-generator');
 
-const validateAuthorization = (req, res) => {
+const validateAuthorization = (req, res, next) => {
   let { authorization } = req.headers;
 
   // Gera um token limitado a 16 caracteres
@@ -14,7 +14,7 @@ const validateAuthorization = (req, res) => {
   if (token !== authorization) {
     return res.status(400).json('Não autorizado!');
   }
-  return res.status(200).json('massa');
+  next();
 };
 
 module.exports = validateAuthorization;
