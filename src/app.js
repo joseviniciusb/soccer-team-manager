@@ -1,8 +1,7 @@
-/* eslint-disable max-lines-per-function */
-// src/app.js
 const express = require('express');
 const validateInitials = require('./middlewares/validateInitials');
 const validateProp = require('./middlewares/validateProperty');
+const validateAuthorization = require('./middlewares/validateAuthorization');
 
 const app = express();
 app.use(express.json());
@@ -23,11 +22,11 @@ const teams = [
 let nextId = 3;
 
 // READ
-app.get('/', (req, res) => res.status(200).json({ message: 'olha ele ae ó' }));
-app.get('/teams', (req, res) => res.status(200).json(teams));
+
+app.get('/teams', validateAuthorization, (req, res) => res.status(200).json(teams));
 
 // Create
-app.post('/teams', validateProp, (req, res) => {
+app.post('/teams', validateProp, validateInitials, (req, res) => {
   const team = { id: nextId, ...req.body };
   teams.push(team);
   nextId += 1;
@@ -40,9 +39,11 @@ app.put('/teams/:id', validateProp, validateInitials, (req, res) => {
   const { name, initials } = req.body;
   let updatedTeam;
 
+  teams.map((team) => console.log(team));
+
   for (let i = 0; i < teams.length; i += 1) {
     const team = teams[i];
-  
+
     if (team.id === Number(id)) {
       team.name = name;
       team.initials = initials;
@@ -57,9 +58,13 @@ app.put('/teams/:id', validateProp, validateInitials, (req, res) => {
 app.delete('/teams/:id', (req, res) => {
   const { id } = req.params;
   const arrayPosition = teams.findIndex((team) => team.id === Number(id));
+  if (arrayPosition === -1) {
+    return res.status(404).json({ message: 'time não encontrado!' });
+  }
+
   teams.splice(arrayPosition, 1);
 
-  res.status(200).end();
+  return res.status(200).json(teams);
 });
 
 module.exports = app;
